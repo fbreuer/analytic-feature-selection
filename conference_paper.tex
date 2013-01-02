@@ -1,6 +1,7 @@
 \documentclass{llncs}
 
-\usepackage{amsthm,amsmath,amssymb,amsfonts,latexsym,graphicx,enumerate,setspace,blkarray, cite, color}
+% had to remove amsthm b/c of llncs.cls
+\usepackage{amsmath,amssymb,amsfonts,latexsym,graphicx,enumerate,setspace,blkarray, cite, color}
 \usepackage{listings}
 \lstset{basicstyle=\linespread{1}\footnotesize\ttfamily,frame=single}
 
@@ -155,7 +156,7 @@ To calculate the affine and ambient dimension, we use the LinAlg library of NumP
 \caption{Definitions of Geometric Properties $f_1$-$f_6$}
 \begin{tabular}{l l r }
 \hline \hline
-property&numerator&denominator$ \\
+property&numerator&denominator \\
 \hline
 
 $f_1$&affine dimension of $P_p$& ambient dimension of $P_p$\\
@@ -185,7 +186,7 @@ where precision and recall are
 \text{precision} &=& \frac{tp}{tp + fp}\\
 \text{recall} &=& \frac{tp}{tp +fn}\end{eqnarray*}
 and $tp,fp,fn$ represent the number of true positives, false positives and false negatives, respectively.
-Notice the clear negative relationship between each of the properties and classifier performance. Each of the linear regression models pictured in Figure \ref{fig:AllProps} are significant on an $\aplha = .01$ level. 
+Notice the clear negative relationship between each of the properties and classifier performance. Each of the linear regression models pictured in Figure \ref{fig:AllProps} are significant on an $\alpha = .01$ level. 
 
 These ratios are used as predictor variables to develop a logistic regression model, as well as a linear regression model that is the basis of our feature selection algorithm. We chose linear and logistic regression based on the observations in Figure \ref{fig:AllProps}, and the fact that  we wish to determine whether a feature set is optimal or suboptimal, ultimately a binary decision. 
 \end{section}
@@ -232,7 +233,7 @@ For each subset, we first need to process the training vectors so that they only
 \caption{Logistic and Linear Regression Models}
 \begin{tabular}{l r r }
 \hline \hline
-Predictor&Logistic Coefficient & Linear Coefficient $ \\
+Predictor&Logistic Coefficient & Linear Coefficient \\
 \hline
 $\beta_0$&-0.64063267&-1.039011e-12\\
 $f_1$&0.15706603&.0\\
