@@ -1,0 +1,46 @@
+caption: Unique Binary Classifiers in Contraception Method Choice Data
+label: tab:ContraBC
+
+caption: Possible Feature Sets in Contraception Method Choice Data
+label: tab:ContraFT
+
+caption: Summary of Data Suite Used to Train Model
+label: tab:trainData
+
+caption: $p$-values for Linear Models of $f_1$ vs Classifier Accuracy in Text Data
+label: tab:f1pVals
+
+caption:$p$-values for Linear Models of $f_2$ vs Classifier Accuracy
+label: tab:f2pVals
+
+caption: $p$-values for Linear Models of $f_3$ and $f_4$ vs Classifier Accuracy
+label: tab:f3f4pVals
+
+caption: $p$-values for Linear Models of $f_4$ vs $F_1$-Score
+label: tab:f4FpVals
+
+caption: $p$-values for Linear Models of $f_5$ vs Classifier Accuracy
+label: tab:f5pVals
+
+caption: Summary of Linear Models
+label: tab:f5modelSummary
+
+caption: Summary of Logistic Regression Model
+label: tab:logModelSummary
+
+caption: Summary of Linear Regression Model
+label: tab:linearModelSummary
+
+caption: Command Line Arguments
+label: tab:args
+
+caption: Predictive Results for Training Data
+label: tab:performance
+
+caption: Predictive Results for Amazon Data
+label: tab:amazon1Results
+
+caption: Predictive Results for Low Dimensional Data
+label: tab:lowDimResults
+
+caption: 

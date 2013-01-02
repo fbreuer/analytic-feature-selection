@@ -1,0 +1,388 @@
+\documentclass{llncs}
+
+\usepackage{amsthm,amsmath,amssymb,amsfonts,latexsym,graphicx,enumerate,setspace,blkarray, cite, color}
+\usepackage{listings}
+\lstset{basicstyle=\linespread{1}\footnotesize\ttfamily,frame=single}
+
+\begin{document}
+
+
+\newcommand{\vv}[1]{\ensuremath{\mathbf{#1}}}
+\newcommand{\uv}[1]{\ensuremath{\mathbf{\hat{#1}}}}
+\newcommand{\rem}[1]{\ensuremath{\operatorname{rem}\text{ }#1}}
+\newcommand{\aut}{\ensuremath{\operatorname{Aut}}}
+\newcommand{\img}{\ensuremath{\operatorname{Img}}}
+\newcommand{\im}{\ensuremath{\operatorname{Im}}}
+\newcommand{\Frac}{\ensuremath{\operatorname{Frac}}}
+\newcommand{\ord}{\ensuremath{\operatorname{ord}}}
+\newcommand{\rank}{\ensuremath{\operatorname{rank}}}
+\newcommand{\Gal}{\ensuremath{\operatorname{Gal}}}
+\newcommand{\Int}{\ensuremath{\operatorname{Int}}}
+\newcommand{\Div}{\ensuremath{\operatorname{Div}}}
+\newcommand{\Var}{\ensuremath{\operatorname{Var}}}
+\newcommand{\Id}{\ensuremath{\operatorname{Id}}}
+\newcommand{\Spec}{\ensuremath{\operatorname{Spec}}}
+\newcommand{\lcm}{\ensuremath{\operatorname{lcm}}}
+\newcommand{\GL}{\ensuremath{\operatorname{GL}}}
+\newcommand{\SL}{\ensuremath{\operatorname{SL}}}
+\newcommand{\OL}{\ensuremath{\operatorname{O}}}
+\newcommand{\normal}{\ensuremath{\triangleleft}}
+\newcommand{\lamron}{\ensuremath{\triangleright}}
+\newcommand{\one}{\ensuremath{\langle 1 \rangle}}
+\newcommand{\zero}{\ensuremath{\langle 0 \rangle}}
+\newcommand{\Q}{\ensuremath{\mathbb{Q}}}
+\newcommand{\Z}{\ensuremath{\mathbb{Z}}}
+\newcommand{\R}{\ensuremath{\mathbb{R}}}
+\newcommand{\C}{\ensuremath{\mathbb{C}}}
+\newcommand{\I}{\ensuremath{\mathbb{I}}}
+\newcommand{\N}{\ensuremath{\mathbb{N}}}
+\newcommand{\F}{\ensuremath{\mathbb{F}}}
+\newcommand{\LC}{\ensuremath{\operatorname{LC}}}
+\newcommand{\LT}{\ensuremath{\operatorname{LT}}}
+\newcommand{\Hom}{\ensuremath{\operatorname{Hom}}}
+\newcommand\spn{\operatorname{span}}
+\newcommand\aff{\operatorname{aff}}
+\newcommand\range{\operatorname{range}}
+\newcommand\norm[1]{\left|\left| #1 \right|\right|}
+\newcommand\inner[2]{\left< #1, #2 \right>}
+
+\title{Analytic Feature Selection for Support Vector Machines}
+\author{Carly Stambaugh\inst{1}\and Hui Yang\inst{2} \and Felix Breuer\inst{1}}
+\institute{Department of Mathematics  \and Department of Computer Science \newline San Francisco State University\newline 1600 Holloway Avenue,\newline San Francisco, CA 94132\newline\email{ cstambau@mail.sfsu.edu},\email{ huiyang@sfsu.edu},\email{ felix@fbreuer.de}}
+\maketitle
+\begin{abstract}
+Support vector machines (SVMs) rely on the inherent geometry of a data set to classify training data. Because of this, we believe SVMs are an excellent candidate to guide the development of an analytic feature selection algorithm, as opposed to the more commonly used heuristic methods. We propose a filter-based feature selection algorithm based on the inherent geometry of a feature set. Through observation, we identified six geometric properties that differ between optimal and suboptimal feature sets, and have statistically significant correlations to classifier performance. Our algorithm is based on logistic and linear regression models using these six geometric properties as predictor variables. The proposed algorithm achieves excellent results on high dimensional text data sets, with features that can be organized into a handful of feature types; for example, unigrams, bigrams or semantic structural features. We believe this algorithm is a novel and effective approach to solving the feature selection problem for linear SVMs.\end{abstract}
+\begin{section}{Introduction}
+Support Vector Machines (SVMs) are kernel-based machine learning classifiers\cite{Vapnik}. Using optimization methods such as quadratic programming, SVMs produce a hyperplane that separates data points into their respective categories. When a new, unlabeled, data point is introduced, its position relative to the hyperplane is used to predict the category the new point belongs to. One of the most important aspects of any machine learning classification problem is determining the particular combination of variables, or features, within a data set that will lead to the most accurate predictions, which is commonly known as the feature selection problem. Currently the methods used  by most machine learning engineers are heuristic in nature, and do not depend heavily on intrinsic properties of the data set\cite{HanKamber}. Due to the geometric nature of an SVM, it is natural to suggest that the performance of a particular feature set may be tied to its underlying geometric structure. Because of this, we have selected SVMs as an excellent candidate to guide the development of an analytically driven approach to the feature selection problem. 
+	
+	
+The primary goal of this research is to identify underlying geometric properties of optimal feature sets, and use these properties to create a feature selection algorithm that relies solely on the inherent geometry of a particular feature set. To accomplish this, we first create $n$-dimensional point clouds to represent known optimal and suboptimal feature sets. These point clouds are then used to identify structural differences between the optimal and suboptimal feature sets. Once these differences are identified, we design an algorithm to identify optimal feature sets based on these observations.
+
+This feature selection algorithm is based on mathematical properties of the feature sets, making it analytic in nature. This sets the algorithm apart from the current, most widely used, wrapper-based or filter-based feature selection methods, which are mostly heuristic in nature\cite{HanKamber}. These methods sometimes require assumptions about the data set, for example, independence among the features, that might not be met by the data. Since our method is based on the geometric structure of the data set, it does not make such assumptions. Also, as machine learning techniques such as SVM become more widely adopted in in various application domains, it is important to understand more about the interaction between a learner and a particular data set, as these insights may guide further development in the field. By discovering some mathematical properties that separate optimal feature sets from suboptimal feature sets, we can guide the feature selection process in a much more precise manner. Additionally, knowing these properties can help us to maximize the efficacy of SVMs for a particular classification problem. These properties could even be used to guide data collection efforts, in effect ensuring that the data collected is capable of providing a good feature space.
+
+The algorithm is based on six properties that have been observed across several text data sets. The properties are based on dimensionality and intersection qualities of the affine hulls of the $n$-dimensional point clouds generated from a particular feature set. We evaluated the algorithm on several types of data sets, including low dimensional continuous data, low dimensional categorical data, high dimensional text data in a binary sparse vector format, and high dimensional text data in a word frequency-based sparse vector format. We have observed that the algorithm delivers the  best performance on the high dimensional text data, in both binary and word frequency-based formats. The algorithm is best suited to data whose features can be grouped together into feature types, for example, unigrams and bigrams. We identified the optimal feature sets of each data set using a wrapper based feature selection method which considers all possible subsets of the whole feature space. These optimal feature sets are then used to develop and evaluate the proposed feature selection algorithm, based on accuracy, precision and recall. 
+
+	
+Our algorithm achieves accuracies ranging from 76\% to 86\% within the data sets on which the model was trained, with an average precision of 86\%, and an average recall of 72\%. On test sets with dimensions ranging from 480 to 1440, accuracy ranges from 76\% to 86\%, with an average precision of 83\% and an average recall of 81\%. Precision remains high (.9-1) for higher dimension data sets, and while the CPU time used by the algorithm increases quadratically in both the number of features and the number of examples, the proposed algorithm requires no human interaction during its runtime. However, the proposed algorithm does not perform well on test sets with dimension lower than approximately 500.  
+
+We believe that this algorithm has a significant impact on the problem of feature selection. Its analytic nature sets it apart from current, more heuristic, methods used widely throughout industry. The process requires no supervision from the user, and thus provides a marked reduction in man hours needed to determine optimal feature sets.
+	 
+\end{section}
+
+\begin{section}{Background and Related Work}
+\begin{subsection}{Basics of Affine Hulls}
+We work with the affine hull of the point cloud, rather than the convex hull, for two reasons. First, dimensionality plays a huge role in this study, and the dimension of a polytope is defined through its affine hull. Secondly, working in affine space allows for the use of linear algebra in calculations, due to the relationship between vector spaces and affine spaces. This section describes this relationship, and shows how we can use linear algebra to make the necessary affine geometry calculations.  Doing this allows us to work with high dimensional data sets, like those associated with natural language processing data, in a manner that is computationally feasible.
+
+
+Let $v_0,v_1,\dots, v_k$ be vectors. For any set of vectors, we write $(v_0,v_1,\dots,v_k)$ to denote the matrix with the $v_i$ as columns. The {\em linear hull} is defined as
+$$\spn(v_0,v_1,\dots,v_k) = \{\sum \lambda_iv_i | \lambda_i \in \R\}.$$
+Its dimension is 
+$$\dim(\spn(v_0,v_1,\dots,v_k)) = \rank(v_0,v_1,\dots, v_k).$$
+The {\em affine hull} is defined as 
+$$\aff(v_0,v_1,\dots,v_k) = \{\sum\lambda_iv_i | \lambda_i\in \R, \sum\lambda_i = 1\}.$$
+For any $w\in \aff(v_0,v_1,\dots,v_k)$, the affine hull can be written as
+$$\aff(v_0,v_1,\dots,v_k) = \{w +\sum\lambda_i(v_i-w)|\lambda_i\in \R, \sum\lambda_i=1\}.$$
+This follows immediately from the definition. The dimension of the affine hull is 
+\begin{eqnarray*}
+\dim(\aff(v_0,v_1,\dots,v_n)) &=& \dim(\spn(v_0-w,v_1-w,\dots,v_k-w))\\
+&=&\rank(v_0-w, v_1-w,\dots,v_k-w),\end{eqnarray*}
+for any $w\in \aff(v_0,v_1,\dots,v_k)$.
+\begin{lemma}
+$$\dim(\aff(v_0,v_1,\dots,v_k)) =
+\begin{cases} \rank(v_0,v_1,\dots,v_k) &\text{if }0\in \aff(v_0,v_1,\dots,v_k)\\
+\rank(v_0,v_1,\dots,v_k)-1 & \text{if }0\notin \aff(v_0,v_1,\dots,v_k))
+\end{cases}$$
+\end{lemma}
+\begin{proof}
+Let $0 \in \aff(v_0,v_1,\dots,v_k)$, then
+\begin{eqnarray*}
+\dim(\aff(v_0,v_1,\dots,v_k))&=& \dim(\spn(v_0-0,v_1-0,\dots,v_k-0))\\
+&=&\rank(v_0-0,v_1-0,\dots,v_k-0)\\
+&=&\rank(v_0,v_1,\dots,v_k).
+\end{eqnarray*}
+Now suppose $0 \notin \aff (v_0,v_1,\dots,v_k)$.
+First, note that 
+\begin{eqnarray*}
+v_0 \in \spn(v_1-v_0,\dots,v_k-v_0) &\iff & -v_0 \in \spn(v_1-v_0, \dots, v_k-v_0) \\
+&\iff&\exists \lambda_i \in \R ,\text{   such that} \left(-\sum_{i=1}^k\lambda_i+1\right)v_0 +\sum_{i=1}^k\lambda_iv_i = 0, \\
+&\text{and}&\left(-\sum_{i=1}^k\lambda_i+1\right) + \sum_{i=1}^k\lambda_i = 1,\\
+&\iff&0\in\aff(v_0,v_1,\dots,v_k).
+\end{eqnarray*}
+So, because column operations preserve rank, we have
+\begin{eqnarray*}
+\rank(v_0,v_1,\dots,v_n)&=&\rank(v_0,v_1-v_0,\dots,v_k-v_0)\\
+&=&\rank(v_1-v_0,\dots,v_k-v_0)+1,\end{eqnarray*}
+since $v_0\notin \spn(v_1-v_0,\dots,v_k-v_0)$. Finally, from the definition of the dimension of the affine hull, we have
+\begin{eqnarray*}
+\rank(v_0,v_1,\dots,v_k)&=&\dim(\aff(v_0,v_1,\dots,v_k))) +1.\end{eqnarray*}
+Thus,
+$$\dim(\aff(v_0,v_1,\dots,v_k)) =\rank(v_0,v_1,\dots,v_n)-1.$$
+\end{proof}
+It is this result that allows us to operate in the context of a vector space, using linear algebra for calculations, rather than affine geometry. This makes calculations for higher dimensional data sets much more computationally feasible.
+\end{subsection}
+\begin{subsection}{Related Work}
+A great deal of studies have been carried out to identify the optimal features for a classification problem\cite{Molina}\cite{Joachims}. However, such studies are mostly heuristic in nature. In this section we review the two studies that are most germane to our proposed feature selection algorithm.
+
+
+Garg, et al.introduce the projection profile, a data driven method for computing generalization bounds for a learning problem\cite{Garg}. This method is especially meaningful in high dimensional learning problems, such as natural language processing\cite{Garg}. The method hinges on random projection of the data into a lower dimensional space. Garg, et al. assert that if the data can be projected into a lower dimensional space with relatively small distortions in the distances between points, then the increase in classification error due to these distortions will be small\cite{Garg}. This is important, because in the lower dimension the generalization error bounds are smaller. Bradley, et al.\cite{Bradley} state that a lower data dimension also corresponds to a lower VC dimension, which in turn also causes lower generalization error\cite{Vapnik}. Expanding on this idea, we apply these concepts to the feature selection problem by quantifying a particular feature sets capacity for dimensionality reduction, giving preference to those feature sets that have the potential to produce lower generalization error.
+
+Bern, et al emphasize the importance of the maximizing the margin between reduced convex hulls in the case of non linearly separable data.\cite{Bern}. We investigate a relationship between classifier accuracy and properties of the intersection of the affine hulls of the class separated point clouds. In a sense, we are describing an upper bound on this margin, the idea being that the more intertwined the class separated point clouds are, the smaller the maximum margin between their reduced convex hulls becomes. We use the affine intersection of the class separated point clouds as a measure of a feature set's suitability for SVM classification with a linear kernel.
+\end{subsection}
+\end{section}
+
+\begin{section}{Identifying the Relevant Geometric Properties of a Dataset}
+In this section, we describe the process by which we identify differences in the geometric structure of optimal and suboptimal feature sets.
+We start with a manually labeled training set consisting of 309 optimal feature sets and 369 suboptimal feature sets. These labels, based on classifier accuracy, were determined using an all subsets wrapper-based feature selection method on data sets from four different classification problems. Each feature set in our training data represents one possible feature set for one possible binary classifier for a particular classification problem. Consider a multi class classification problem with $\ell$ classes; this problem consists of $2^{\ell}$ classifiers that represent all possible ways to subdivide $\ell$ classes into two groups. We remove half of these possibilities due to symmetry. Finally, we do not consider the subset with an empty positive class to be a viable classifier. 
+
+Now we create three geometric objects for each feature set in our training data. Consider a single feature set. Recall, this feature set is an array of features associated with positive and negative examples for a particular binary classification problem. It is these examples that we use to build our geometric objects.
+
+First, we organize the data into a sparse matrix, with each point in the original data set represented as a row. The unique value of each feature is represented by a column in the matrix. The entries in the matrix are determined as follows:
+$$a_{ij} =\left\{
+\begin{array}{c l}     
+    1 & \text{if data point $i$ contains feature $j$}\\
+    0 & \text{otherwise}
+\end{array}\right.$$
+
+The rows of this matrix are organized into blocks such that each block contains all the data points belonging to the same class. We refer to this matrix as the full matrix, or $M_f$. Next, we create another matrix referred to as the positive matrix, $M_p$. This matrix contains only the positive examples for the original data set. Finally, we construct the negative matrix, $M_n$. This matrix contains all of the rows that correspond to examples belonging to the negative class. By considering the rows of these matrices to be points in space, we define $P$ to be the resulting point cloud. We refer to the resulting three clouds as the {\em full point cloud}, $P_f$, the {\em positive point cloud}, $P_p$ and the {\em negative point cloud}, $P_n$. 
+
+
+We calculate the affine and ambient dimension of each of these point clouds. We use the term affine dimension to refer to the dimension of the affine hull of the point cloud $P_{[\cdot]}$. We could simply use the term dimension, rather than affine dimension, since the dimension of a polytope is defined to be the dimension of its affine hull\cite{Gallier}. However, we make the distinction because we also refer to the ambient dimension of the point clouds $P_p$, $P_n$ and $P_f$.  The ambient dimension of a point cloud is the dimension of the space that surrounds it. In this case, we use the number of nonzero columns present in the matrix.
+
+
+To calculate the affine and ambient dimension, we use the LinAlg library of NumPy\cite{numpy}. Recall, from Section 2, that to find the affine dimension of $P_{[\cdot]}$ using linear algebra, it is first necessary to determine whether the zero vector was present in its matrix representation. If so, the affine dimension of $P_{[\cdot]}$ is found by counting the number of nonzero singular values, a common numerical method for finding matrix rank\cite{numR}. In the case where the zero vector is not present in the matrix, the affine dimension of $P_{[\cdot]}$ is one less than the rank of its matrix representation. From these calculations we create 5 ratios, each with an affine dimension in the numerator, and an ambient dimension in the denominator. These ratios are interesting because they offer insight to a data set's capacity for dimensionality reduction. According to \cite{Bradley}\cite{Garg}, if a data set can be effectively projected into a lower dimension with small distortions in the distances between points, the generalization error of that data set is lower than that of a data set lacking this property. 
+\begin{table}[ht]
+\centering
+\caption{Definitions of Geometric Properties $f_1$-$f_6$}
+\begin{tabular}{l l r }
+\hline \hline
+property&numerator&denominator$ \\
+\hline
+
+$f_1$&affine dimension of $P_p$& ambient dimension of $P_p$\\
+$f_2$&affine dimension of $P_n$& ambient dimension of $P_n$\\
+$f_3$&affine dimension of $P_p$& ambient dimension of $P_f$\\
+$f_4$&affine dimension of $P_n$& ambient dimension of $P_f$\\
+$f_5$&affine dimension of $P_f$& ambient dimension of $P_f$\\
+$f_6$&\# of examples in affine intersection   &\# of total examples\\
+\hline
+\end{tabular}
+\label{tab:formulas}
+\end{table}
+
+
+In addition to these five ratios, we create a sixth ratio to quantify the separability of the affine hulls of $P_p$ and $P_n$. We do this by identifying the examples that lie within the affine hulls of both the positive and negative point clouds. Table \ref{tab:formulas} shows the composition of each of these ratios.
+\begin{figure}[ht]
+\includegraphics[scale = .5]{figures/conf_fig}
+\caption{Distributions of Geometric Properties}
+\label{fig:AllProps}
+\end{figure}
+
+
+Each plot in figure \ref{fig:AllProps} shows the values of a particular geometric property for each of the 622 feature sets in our training data. The value of this ratio is plotted against a measure of that particular feature set's performance. In most cases this measure is classifier accuracy, but in the case of $f_4$, we noticed a much stronger correlation between the $f_4$ value and the $F_1$-Score for a given feature set, which is defined as
+$$\text{$F_1$-Score} = 2\cdot\frac{\text{precision}\cdot\text{recall}}{\text{precision}+\text{recall}}$$
+where precision and recall are
+\begin{eqnarray*}
+\text{precision} &=& \frac{tp}{tp + fp}\\
+\text{recall} &=& \frac{tp}{tp +fn}\end{eqnarray*}
+and $tp,fp,fn$ represent the number of true positives, false positives and false negatives, respectively.
+Notice the clear negative relationship between each of the properties and classifier performance. Each of the linear regression models pictured in Figure \ref{fig:AllProps} are significant on an $\aplha = .01$ level. 
+
+These ratios are used as predictor variables to develop a logistic regression model, as well as a linear regression model that is the basis of our feature selection algorithm. We chose linear and logistic regression based on the observations in Figure \ref{fig:AllProps}, and the fact that  we wish to determine whether a feature set is optimal or suboptimal, ultimately a binary decision. 
+\end{section}
+\begin{section}{Geometric Properties-Based Feature Selection Algorithm}
+The goal of this program is to use the observations discussed in the previous section to identify optimal feature sets for a text classification problem using an SVM with a linear kernel. This section describes the specifics of the algorithm.
+
+
+The input of this algorithm includes a training data set, a list of categories used to label the data, a set of boundary values for the feature types and a directory to store the output files. The columns representing a given feature type must be stored in consecutive columns, as  previously described in Section 3. It is necessary for each training vector to contain at least one nonzero column for each feature type. If the data does not lend itself to this naturally, the user must handle missing values in the manner best suited to the particular learning problem. The vectors of the training data set should be represented in sparse vector notation.
+
+\begin{figure}[h]
+\caption{Structural Feature Selection Pseudo Code}
+\begin{lstlisting}
+1 for each unique binary classifier:
+			
+2   for each possible subset of features:
+3	   generate training vectors for subset
+4	   build positive, negative and full matrices
+		
+5	   for each matrix:
+6		   calculate ambient and affine dimension
+7	   calculate dimension based features:
+		(see Section 3 for details)
+8	   calculate affine intersection rate (f_6)
+		(see Section 3 for details)
+		
+9 	standardize values for f1-f6 for all possible subsets
+	
+10  for each possible subset of features:
+11	  lin_pred = predict using linear regression model
+12	  log_pred = predict using logistic regression model
+
+13	  if lin_pred > 0 and log_pred = 1:
+14		prediction = optimal
+15		write subset to file
+16	  else:
+17		prediction = suboptimal
+\end{lstlisting}
+\label{fig:code}
+\end{figure}
+Figure \ref{fig:code} shows the structure of the algorithm. The program starts by identifying all the unique binary classifiers, and all the possible combinations of feature types(lines 1-2). It does this by generating all possible combinations of  labels and eliminates those which are symmetric to an existing subset. It is necessary to remove the empty feature set, and the binary classifier with an empty positive or negative class. The program creates a directory chosen by the user and creates files within it to store the results for each of the unique binary classifiers. Then, the program executes a nested loop as shown in figure \ref{fig:code}(lines 3-9). 
+For each subset, we first need to process the training vectors so that they only include vectors for that particular feature set. Once this is done, the data points in the training set are split into positive and negative examples. Then, three matrices are used to represent the point clouds $P_n$,$P_p$ and $P_f$(line 5). The ratios, described in Section 3, are calculated using the affine and ambient dimensions of these point clouds.
+\begin{table}[ht]
+\centering
+\caption{Logistic and Linear Regression Models}
+\begin{tabular}{l r r }
+\hline \hline
+Predictor&Logistic Coefficient & Linear Coefficient $ \\
+\hline
+$\beta_0$&-0.64063267&-1.039011e-12\\
+$f_1$&0.15706603&.0\\
+$f_2$&0.1327297& 0\\
+$f_3$&-0.03350878&09114375\\
+$f_4$&-0.15182902& -.01223389\\
+$f_5$&0.19548473&-.0200644\\
+$f_6$&-0.68787718&0\\
+\hline
+\end{tabular}
+\label{tab:models}
+\end{table}
+
+
+Finally, the algorithm makes a predication for a particular feature set based on the linear and logistic regression models detailed in Table \ref{tab:models}. These models were selected using forward stepwise inclusion with the AIC as the evaluation criterion. In order for a feature set to receive a prediction of {\em optimal}, the logistic regression model must predict a value greater than .5, and the linear model must predict a positive standardized accuracy. (Recall that a z-score of zero indicates the norm.) If both of these conditions are met, then the subset is written to the appropriate output file.
+ 
+
+The output of the algorithm is a list of suggested feature sets that have the structural characteristics associated with optimal feature sets. Remember, an optimal subset need not be unique. The algorithm gives the user a list of subsets to chose from, based on the user's own criteria.
+
+\end{section}
+
+
+
+\begin{section}{Algorithm Evaluation}
+
+In this section, we evaluate the power of the feature selection algorithm. We discuss some limitations of the algorithm, particularly, the relationship between the algorithm's performance and the dimensionality of the input data. We also present a theoretical and empirical time complexity analysis for the algorithm.
+
+
+\begin{subsection}{Algorithm Performance}
+The algorithm was run on each of the text data sets used to build the training set, and the results are presented in table \ref{tab:performance}. The polarity1, polarity2 and strength sentences are data sets originally used to classify the polarity and strength of relationships between a food/chemical/gene and a disease\cite{Yang}. The movies documents\cite{Movies} and webtext sentences\cite{nltk} are built from corpora included in Python's Natural Language Tool Kit\cite{nltk}. The movie review corpus is intended for classifying the polarity of reviews as positive or negative, and the webtext corpus consists of sentences from six different websites, each labeled according to their site of origin. 
+\begin{table}[ht]
+\centering
+\caption{Summary of Data Suite Used to Train Model}
+\begin{tabular}{l l l r r r}
+\hline \hline
+Data Set & R & C & BC & FT & resulting feature sets\\
+\hline
+Polarity1 Sentences &  463 & 645 & 7 & 5 & 156  \\
+Polarity2 Sentences  &  324 & 600 & 7 & 5 & 183\\
+Strength Sentences  & 787 & 645 & 7 & 5 & 179\\
+Movies Documents   & 300 & 1000 & 1 & 3 & 7 \\
+Webtext Sentences  & 1200 & 500 & 15 & 4 & 192\\
+\hline
+\end{tabular}
+\label{tab:trainData}
+\end{table}
+
+
+Table \ref{tab:trainData} is a brief summary table of each set we used to train the model used in our feature selection algorithm. It includes the number of rows(R) and columns(C) of each raw data set. Each data set contains different types of features, and the number of these, (FT), is also listed for each data set. The number of unique binary classifiers (BC) resulting from the classification labels is also listed. Finally, the number of feature sets added to our training set as a result of the creation process is listed. 
+
+
+To evaluate our feature selection algorithm, we calculate its accuracy, precision and recall by comparing the predictions made by the algorithm to the labels that were generated during creation of the training set. (See Section 3 for the label generation process.) Using these labels, we define accuracy, precision and recall as follows:
+\begin{eqnarray*}
+\text{accuracy} & = & \frac{tp + tn}{tp +fp + tn + fn}\\
+\text{precision} &=& \frac{tp}{tp + fp}\\
+\text{recall} &=& \frac{tp}{tp +fn},\end{eqnarray*} where $tp,tn,fp,fn$ represent the number of true positives, true negatives, false positives and false negatives, respectively. With respect to our algorithm, precision evaluates whether the feature sets selected by the algorithm actually perform optimally. Recall, on the other hand, measures how well the algorithm identifies all optimal feature sets. 
+\begin{table}[ht]
+\centering
+\caption{Algorithm Performance for Training Data}
+\begin{tabular}{l r r r}
+\hline \hline
+Data Set & Accuracy & Precision&  Recall\\
+\hline
+Polarity1 Sentences& $0.7564$ & $0.8621 $& $0.625 $\\
+Polarity2 Sentences& $0.7542 $ & $0.6304 $& $0.8529$\\
+Strength Sentences& $0.7814 $ & $0.8986 $& $0.6526 $\\
+Movie Documents& $0.8571 $ & $1 $& $0.8 $\\
+Webtext Sentences& $0.8091 $ & $0.9067 $& $0.6602 $\\
+\hline
+\end{tabular}
+\label{tab:performance}
+\end{table}
+Recalling that an optimal feature set need not be unique, we see that precision is extremely important to this task. It is of more value to the user that the percentage of recommended feature sets that actually produce optimal results is high, since these results are the pool from which the user will ultimately choose a feature set. Optimal feature sets that are excluded from the results, or false negatives, do not have nearly as much consequence. 
+
+
+Note, in table 4, the high precision within each data set. These numbers indicate that the algorithm we designed is quite effective for selecting optimal feature sets within the training data. Especially within the Movie Documents, where the algorithm achieves a precision of 1. This means that every feature set the algorithm returned was in fact an optimal feature set for classifying the Movies Documents with a linear SVM. While the algorithm's precision is somewhat lower on the Polarity2 Sentences, it is still impressive, given that only 38\% of the feature sets within the Polarity2 Sentences are actually labeled as optimal.
+
+
+We created several data sets from the Amazon Customer Review Data, available from the UCI Machine Learning Repository\cite{UCI}. The raw data consists of 10,000 features and 1500 examples, with labels corresponding to 50 different authors. We developed each test set using a different set of five authors. Using different authors ensures that the reviews will be entirely different from one data set to the next. Because the reviews are different, the particular set of features generated will also be different, even though they are created in the same manner. The dimension of the  resulting data sets can increased or decreased by controlling the frequency requirements for inclusion of a feature. For example, to reduce the numbers of features, we would require that a particular unigram feature be present within the reviews at least 10 times. Then, to increase the dimension, we simply include less and less frequent features. Each test set also went through the same labeling process as the training data, in order to determine the algorithm's accuracy, precision and recall on previously unseen data. Recall this process was based on a wrapper based, all subsets algorithm that is commonly used to address the problem of feature selection. The results indicate that the algorithm also performs very well on previously unseen data. The Amazon data set was used to test the algorithm over a range of dimensions, and table \ref{tab:amazonRanges} summarizes the performance for these tests for column dimensions ranging from 480 to 1440. These results indicate that the algorithm performs very well within this range of column dimensions. We have observed that precision remains high (.9-1) for dimensions up to 3000.
+\begin{table}[ht]
+\centering
+\caption{Peak Algorithm Performance for Amazon Data}
+\begin{tabular}{l l l l}
+\hline \hline
+Dimension& Accuracy &Precision&  Recall\\
+\hline
+480	&0.768888889&	0.823529412&	0.711864407\\
+640&	0.76&	0.838095238&	0.704\\
+800&	0.831111111&	0.844444444&	0.870229008\\
+960&	0.817777778&	0.837037037&	0.856060606\\
+1120&	0.813333333&	0.822222222&	0.860465116\\
+1280&	0.795555556&	0.8&	0.850393701\\
+1440&	0.804444444&	0.82962963&	0.842105263\\
+\hline
+\end{tabular}
+\label{tab:amazonRanges}
+\end{table}
+\end{subsection}
+
+
+\begin{subsection}{Limitations}
+We have observed that the proposed algorithm does not perform well on low dimensional categorical data or low dimensional continuous data. Table \ref{tab:lowDimResults} provides a summary of the algorithm's performance on several test data sets according to column dimension and data type. A precision or recall score of 0 indicates that the algorithm did not accurately identify any optimal feature sets.
+\begin{table}[ht]
+\centering
+\caption{Predictive Results for Low Dimensional Data}
+\begin{tabular}{l l r r r}
+\hline \hline
+Column Dimension& Data Type& Accuracy & Precision&  Recall\\
+\hline
+13&\text{continuous}&0.3218& 0.1111& 0.2083\\
+38&\text{categorical}&0.4444& 0 & 0\\
+100&\text{categorical}&0.4286& 0 &0\\
+\hline
+\end{tabular}
+\label{tab:lowDimResults}
+\end{table}
+
+
+To better understand the relationship between our algorithm's performance and dimensionality, we designed an experiment using an Amazon data set as described above. The columns within each of the four feature types are organized in terms of frequency, so that the most common features occur in the earlier columns of each feature type block. The algorithm is used on these data sets repeatedly, while incrementing the number of dimensions included each time. For instance, the first run of the algorithm may include a total of 80 dimensions, the first 20 columns from each feature type. The algorithm's accuracy, precision and recall are recorded for the particular dimension, as well as the CPU time. The total number of features included is then increased to 160, by including the first 40 columns of each feature type. This process is repeated until all available dimensions are being used in the feature selection process. This is different than the previous Amazon data sets, because we are using the same set of five authors throughout the entire experiment, to control for variance between raw data sets. Figure 3 shows the results of this experiment. This experiment was repeated several times each using a different set of five authors with similar results.
+\begin{figure}[h]
+\begin{center}
+\includegraphics[scale = .4]{figures/amazon2}
+\caption{Dimension Testing Results}
+\end{center}
+\label{fig:dimtests}
+\end{figure}
+
+These experiments indicate that the performance of the algorithm is very dependent on the dimensionality of the input data. Note the low values in accuracy, precision and recall for those data sets with less than ~400-500 columns. Figure 3 shows the rapid growth in accuracy, precision and recall for the lower dimensions that  becomes much slower for dimensions larger than ~500. Further study may be warranted to discover the cause of the dimensionality dependence observed in these experiments.
+
+
+In figure 3, we see that the CPU time increases quadratically with column dimension. Note though, that the number of rows, feature types and labels are all held constant through out the experiment. The theoretical time complexity of the algorithm is in fact a function of all of these variables;
+$$\mathcal{O}\left((2^{(\ell - 1)}-1)(2^k-1)(m^2n^2)\right),$$
+where $\ell$ is the number of classification labels in the problem, $k$ is the number of feature groups present, and $m,n$ are the number of rows and columns, respectively, in the training data. The $\mathcal{O}(m^2n^2)$ terms come from the complexity of the singular value decomposition algorithm which is $\mathcal{O}(mn^2)$\cite{Tesic}. In our algorithm, we perform this calculation $(m + 2)$ times during the calculation of the affine intersection ratio. Recall, that the affine intersection ratio is calculated for $(2^k -1)$ feature sets, for each of $(2^{\ell -1} - 1)$ unique binary classifiers. While the Amazon data sets had the capacity to test up to 10,000 columns, the run time became unreasonably long after around 2400 dimensions on a lap top computer.
+\end{subsection}
+
+
+\end{section}
+
+\begin{section}{Conclusion}
+Support Vector Machines are machine learning classifiers that use geometry to separate training examples into their respective classes. Because of this, SVMs are an excellent candidate for a structural based feature selection algorithm. Many of the commonly used feature selection algorithms are heuristic in nature and do not use inherent characteristics of the data. A more data driven, analytic approach to feature selection will help machine learning engineers to better understand the relationship between a particular classification problem and a given optimal feature set. This understanding can influence data collection efforts and improve classification accuracy.
+
+
+Through investigating the geometric structure of optimal and suboptimal feature sets, we found six qualities that differ significantly between them. We have discovered a linear relationship between the values of our dimensionality and intersection based features with classifier performance. We built linear and logistic regression models that use these six properties as predictor variables to identify optimal feature sets. We used these models to design a filter based feature selection algorithm that is analytic in nature, as opposed to the more commonly used wrapper based heuristic methods. 
+
+
+Our feature selection algorithm performs best on text data sets that have more than approximately 500 features that can be organized into a handful feature types. While the precision remains high for data sets with more that ~2500 features, the computation time needed for these sets is too long to be practical on a single computer. Because of this, further study into parallelization of the algorithm may be warranted.
+The algorithm did not perform well on low dimensional data sets. Despite these limitations, our algorithm presents a useful and innovative approach to the problem of feature selection.
+\end{section}
+
+\bibliography{conference_paper}
+\bibliographystyle{splncs}
+
+\end{document}
