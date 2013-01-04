@@ -46,6 +46,7 @@
 \newcommand\range{\operatorname{range}}
 \newcommand\norm[1]{\left|\left| #1 \right|\right|}
 \newcommand\inner[2]{\left< #1, #2 \right>}
+\newcommand{\mset}[2]{\left\{ #1 \;\middle| \; #2 \right\}}
 
 \title{Analytic Feature Selection for Support Vector Machines}
 \author{Carly Stambaugh\inst{1}\and Hui Yang\inst{2} \and Felix Breuer\inst{1}\thanks{Felix Breuer was supported by Deutsche Forschungsgemeinschaft (DFG) grant BR~4251/1-1.}}
@@ -70,70 +71,33 @@ We believe that this algorithm has a significant impact on the problem of featur
 	 
 \end{section}
 
-\begin{section}{Background and Related Work}
-\begin{subsection}{Basics of Affine Hulls}
-We work with the affine hull of the point cloud, rather than the convex hull, for two reasons. First, dimensionality plays a huge role in this study, and the dimension of a polytope is defined through its affine hull. Secondly, working in affine space allows for the use of linear algebra in calculations, due to the relationship between vector spaces and affine spaces. This section describes this relationship, and shows how we can use linear algebra to make the necessary affine geometry calculations.  Doing this allows us to work with high dimensional data sets, like those associated with natural language processing data, in a manner that is computationally feasible.
-
-
-Let $v_0,v_1,\dots, v_k$ be vectors. For any set of vectors, we write $(v_0,v_1,\dots,v_k)$ to denote the matrix with the $v_i$ as columns. The {\em linear hull} is defined as
-$$\spn(v_0,v_1,\dots,v_k) = \{\sum \lambda_iv_i | \lambda_i \in \R\}.$$
-Its dimension is 
-$$\dim(\spn(v_0,v_1,\dots,v_k)) = \rank(v_0,v_1,\dots, v_k).$$
-The {\em affine hull} is defined as 
-$$\aff(v_0,v_1,\dots,v_k) = \{\sum\lambda_iv_i | \lambda_i\in \R, \sum\lambda_i = 1\}.$$
-For any $w\in \aff(v_0,v_1,\dots,v_k)$, the affine hull can be written as
-$$\aff(v_0,v_1,\dots,v_k) = \{w +\sum\lambda_i(v_i-w)|\lambda_i\in \R, \sum\lambda_i=1\}.$$
-This follows immediately from the definition. The dimension of the affine hull is 
-\begin{eqnarray*}
-\dim(\aff(v_0,v_1,\dots,v_n)) &=& \dim(\spn(v_0-w,v_1-w,\dots,v_k-w))\\
-&=&\rank(v_0-w, v_1-w,\dots,v_k-w),\end{eqnarray*}
-for any $w\in \aff(v_0,v_1,\dots,v_k)$.
-\begin{lemma}
-$$\dim(\aff(v_0,v_1,\dots,v_k)) =
-\begin{cases} \rank(v_0,v_1,\dots,v_k) &\text{if }0\in \aff(v_0,v_1,\dots,v_k)\\
-\rank(v_0,v_1,\dots,v_k)-1 & \text{if }0\notin \aff(v_0,v_1,\dots,v_k))
-\end{cases}$$
-\end{lemma}
-\begin{proof}
-Let $0 \in \aff(v_0,v_1,\dots,v_k)$, then
-\begin{eqnarray*}
-\dim(\aff(v_0,v_1,\dots,v_k))&=& \dim(\spn(v_0-0,v_1-0,\dots,v_k-0))\\
-&=&\rank(v_0-0,v_1-0,\dots,v_k-0)\\
-&=&\rank(v_0,v_1,\dots,v_k).
-\end{eqnarray*}
-Now suppose $0 \notin \aff (v_0,v_1,\dots,v_k)$.
-First, note that 
-\begin{eqnarray*}
-v_0 \in \spn(v_1-v_0,\dots,v_k-v_0) &\iff & -v_0 \in \spn(v_1-v_0, \dots, v_k-v_0) \\
-&\iff&\exists \lambda_i \in \R ,\text{   such that} \left(-\sum_{i=1}^k\lambda_i+1\right)v_0 +\sum_{i=1}^k\lambda_iv_i = 0, \\
-&\text{and}&\left(-\sum_{i=1}^k\lambda_i+1\right) + \sum_{i=1}^k\lambda_i = 1,\\
-&\iff&0\in\aff(v_0,v_1,\dots,v_k).
-\end{eqnarray*}
-So, because column operations preserve rank, we have
-\begin{eqnarray*}
-\rank(v_0,v_1,\dots,v_n)&=&\rank(v_0,v_1-v_0,\dots,v_k-v_0)\\
-&=&\rank(v_1-v_0,\dots,v_k-v_0)+1,\end{eqnarray*}
-since $v_0\notin \spn(v_1-v_0,\dots,v_k-v_0)$. Finally, from the definition of the dimension of the affine hull, we have
-\begin{eqnarray*}
-\rank(v_0,v_1,\dots,v_k)&=&\dim(\aff(v_0,v_1,\dots,v_k))) +1.\end{eqnarray*}
-Thus,
-$$\dim(\aff(v_0,v_1,\dots,v_k)) =\rank(v_0,v_1,\dots,v_n)-1.$$
-\end{proof}
-It is this result that allows us to operate in the context of a vector space, using linear algebra for calculations, rather than affine geometry. This makes calculations for higher dimensional data sets much more computationally feasible.
-\end{subsection}
-\begin{subsection}{Related Work}
+\begin{section}{Related Work}
 A great deal of studies have been carried out to identify the optimal features for a classification problem\cite{Molina}\cite{Joachims}. However, such studies are mostly heuristic in nature. In this section we review the two studies that are most germane to our proposed feature selection algorithm.
-
 
 Garg, et al.introduce the projection profile, a data driven method for computing generalization bounds for a learning problem\cite{Garg}. This method is especially meaningful in high dimensional learning problems, such as natural language processing\cite{Garg}. The method hinges on random projection of the data into a lower dimensional space. Garg, et al. assert that if the data can be projected into a lower dimensional space with relatively small distortions in the distances between points, then the increase in classification error due to these distortions will be small\cite{Garg}. This is important, because in the lower dimension the generalization error bounds are smaller. Bradley, et al.\cite{Bradley} state that a lower data dimension also corresponds to a lower VC dimension, which in turn also causes lower generalization error\cite{Vapnik}. Expanding on this idea, we apply these concepts to the feature selection problem by quantifying a particular feature sets capacity for dimensionality reduction, giving preference to those feature sets that have the potential to produce lower generalization error.
 
 Bern, et al emphasize the importance of the maximizing the margin between reduced convex hulls in the case of non linearly separable data.\cite{Bern}. We investigate a relationship between classifier accuracy and properties of the intersection of the affine hulls of the class separated point clouds. In a sense, we are describing an upper bound on this margin, the idea being that the more intertwined the class separated point clouds are, the smaller the maximum margin between their reduced convex hulls becomes. We use the affine intersection of the class separated point clouds as a measure of a feature set's suitability for SVM classification with a linear kernel.
-\end{subsection}
 \end{section}
 
 \begin{section}{Identifying the Relevant Geometric Properties of a Dataset}
-In this section, we describe the process by which we identify differences in the geometric structure of optimal and suboptimal feature sets.
-We start with a manually labeled training set consisting of 309 optimal feature sets and 369 suboptimal feature sets. These labels, based on classifier accuracy, were determined using an all subsets wrapper-based feature selection method on data sets from four different classification problems. Each feature set in our training data represents one possible feature set for one possible binary classifier for a particular classification problem. Consider a multi class classification problem with $\ell$ classes; this problem consists of $2^{\ell}$ classifiers that represent all possible ways to subdivide $\ell$ classes into two groups. We remove half of these possibilities due to symmetry. Finally, we do not consider the subset with an empty positive class to be a viable classifier. 
+
+The overall approach of this work was to take a practical data set arising from a natural language processing problem and to identify key geometric properties of this dataset that can be used describe those feature sets for which an SVM performs well. This process of identifying relevant geometric properties is described in this section. In the next section, we construct an empirical algorithm for feature selection based on the geometric properties identified here.
+
+\marginpar{TODO}TODO: Add short paragraph explaining the initial dataset used for the exploration. Where does it come from? Do we have a reference we can cite? 
+
+The key properties of the dataset we are working with are the following. All samples are 0-1-vectors, the number of features is approximately equal to the number of samples and our goal is to perform binary classification using an SVM on a fully labeled dataset. Because the number of samples we have is smaller than the dimension of feature space, we chose to focus on a linear kernel SVM, since, given the limited amount of data available, more complex kernels will likely lead to overfitting. As a linear kernel SVM performs linear separation if possible, it would have been natural to study the convex hulls of the positive and negative classes of samples. However, due to reasons of performance and ease of implementation, we instead chose to focus on a much simpler geometric invariant: the affine hulls of the positive and negative classes of samples. This choice allows us to use standard and widely-available linear algebra libraries for our computations so that we can work with high dimensional data sets, like those associated with natural language processing data, in a manner that is computationally feasible.
+
+In this paragraph, we review some basic material on affine hulls. For more information, we refer the reader to standard geometry textbooks such as \cite{webster}. Let $v_0,v_1,\dots, v_k$ be vectors. For any set of vectors, we write $(v_0,v_1,\dots,v_k)$ to denote the matrix with the $v_i$ as columns. The {\em linear hull} $\spn(v_0,v_1,\dots,v_k)$ of the vectors $v_i$ is the smallest linear space  containing all $v_i$ which, equivalently, can be defined as $\spn(v_0,v_1,\dots,v_k) = \mset{\sum \lambda_iv_i}{\lambda_i \in \R}$.
+The dimension of the linear hull is the rank of the matrix with the $v_i$ as columns. An {\em affine space} is a translate of a linear space. In particular, it does not necessarily contain the origin. The {\em affine hull} $\aff(v_0,v_1,\dots,v_k)$ of the $v_i$ is the smallest affine space containing all $v_i$, which, equivalently, can be defined as
+\begin{eqnarray*}
+\aff(v_0,v_1,\dots,v_k) &=& \mset{\sum_{i=0}^k\lambda_iv_i}{\lambda_i\in \R, \sum_{i=0}^k\lambda_i = 1} \\
+&=& \mset{w +\sum_{i=0}^k\lambda_i(v_i-w)}{\lambda_i\in \R}
+\end{eqnarray*}
+where $w$ is any point in the affine hull, such as one of the $v_i$. The dimension of the affine hull is the rank of the matrix with columns $v_0-w, \ldots, v_d-w$. Consequently, the dimension of the affine hull is $\rank(v_0,v_1,\dots,v_k)$ if the origin is contained in the affine hull, and it is $\rank(v_0,v_1,\dots,v_k)-1$ if the origin is not contained in the affine hull. This simple observation makes calculations for higher dimensional data sets easy to implement and computationally efficient.
+
+
+\marginpar{differences in the geometric structure of optimal and suboptimal feature sets.}
+The dataset we use to start our investigation is a manually labeled training set consisting of 309 optimal feature sets and 369 suboptimal feature sets. These labels, based on classifier accuracy, were determined using an all subsets wrapper-based feature selection method on data sets from four different classification problems. Each feature set in our training data represents one possible feature set for one possible binary classifier for a particular classification problem. Consider a multi class classification problem with $\ell$ classes; this problem consists of $2^{\ell}$ classifiers that represent all possible ways to subdivide $\ell$ classes into two groups. We remove half of these possibilities due to symmetry. Finally, we do not consider the subset with an empty positive class to be a viable classifier. 
 
 Now we create three geometric objects for each feature set in our training data. Consider a single feature set. Recall, this feature set is an array of features associated with positive and negative examples for a particular binary classification problem. It is these examples that we use to build our geometric objects.
 
