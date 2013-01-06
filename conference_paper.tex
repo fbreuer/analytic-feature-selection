@@ -79,7 +79,7 @@ Garg, et al.introduce the projection profile, a data driven method for computing
 Bern, et al emphasize the importance of the maximizing the margin between reduced convex hulls in the case of non linearly separable data.\cite{Bern}. We investigate a relationship between classifier accuracy and properties of the intersection of the affine hulls of the class separated point clouds. In a sense, we are describing an upper bound on this margin, the idea being that the more intertwined the class separated point clouds are, the smaller the maximum margin between their reduced convex hulls becomes. We use the affine intersection of the class separated point clouds as a measure of a feature set's suitability for SVM classification with a linear kernel.
 \end{section}
 
-\begin{section}{Identifying the Relevant Geometric Properties of a Dataset}
+\begin{section}{Identifying the Relevant Geometric Properties of a Data Set}
 
 The overall approach of this work was to examine feature sets arising from  several natural language processing classification problems. We sought to identify key geometric properties that can be used describe those feature sets for which an SVM performs well. This process of identifying relevant geometric properties is described in this section. In the next section, we construct an empirical algorithm for feature selection based on the geometric properties identified here.
 
@@ -118,7 +118,7 @@ $f_6$&\# of samples in $\aff(P_p)\cap\aff(P_f)$\;\;\;\;\;   &\# of total samples
 \label{tab:formulas}
 \end{table}
 
-The purpose of the properties $f_i$ is to allow us to assess the geometric structure of the data with respect to different feature sets. In this setting, a feature set is a set of columns. Selecting a certain subset of features amounts to removing the other columns from the matrices. Geometrically, this means projecting the point set onto the coordinate subspace corresponding to the selected feature set. We can then apply the measures $f_i$ to these projected datasets and compare the values we obtain.
+The purpose of the properties $f_i$ is to allow us to assess the geometric structure of the data with respect to different feature sets. In this setting, a feature set is a set of columns. Selecting a certain subset of features amounts to removing the other columns from the matrices. Geometrically, this means projecting the point set onto the coordinate subspace corresponding to the selected feature set. We can then apply the measures $f_i$ to these projected data sets and compare the values we obtain.
 
 For each feature set in our training data, we trained a linear kernel SVM on the training data and assessed the performance of the linear classifier obtained on the test data. We also computed the values of the $f_i$ for each feature set using the LinAlg library of NumPy\cite{numpy}. To find the affine dimension of $P_{[\cdot]}$ using linear algebra, it is first necessary to determine whether the zero vector is contained in the affine hull. If so, the affine dimension of $P_{[\cdot]}$ is found by counting the number of nonzero singular values, a common numerical method for finding matrix rank\cite{numR}. Otherwise, the affine dimension of $P_{[\cdot]}$ is one less than the rank of its matrix representation.
 
