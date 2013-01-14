@@ -80,6 +80,7 @@ Bern, {\it et al.} emphasize the importance of the maximizing the margin between
 \end{section}
 
 \begin{section}{Identifying the Relevant Geometric Properties of a Data Set}
+\label{sec:geometry}
 
 The overall approach of this work is to examine feature sets arising from  several natural language processing classification problems. We seek to identify key geometric properties that can be used to describe those feature sets for which an SVM performs well. This process of identifying relevant geometric properties is described in this section. In the next section, we construct an empirical algorithm for feature selection based on the geometric properties identified here.
 
@@ -292,7 +293,10 @@ Dimension& Accuracy &Precision&  Recall\\
 
 
 \begin{subsection}{Limitations}
-We have observed that the proposed algorithm does not perform well on low dimensional categorical data or low dimensional continuous data. Table \ref{tab:lowDimResults} provides a summary of the algorithm's performance on several test data sets according to column dimension and data type. A precision or recall score of 0 indicates that the algorithm did not accurately identify any optimal feature sets.
+
+As explained in Section~\ref{sec:geometry}, the proposed algorithm is designed to work well for linear kernel SVMs. In situations where the ratio of the number of samples to the total number of features is very large and the use of a higher degree kernel is warranted, we do not expect the affine geometry of the data set to reveal much useful information about which feature sets allow the SVM to generalize well. 
+
+Moreover, the proposed algorithm is tailored towards binary data and we do not expect it to perform well on continuous data:  Suppose the data consists of $n$ points in $n$-dimensional space that are drawn from a model that generates points on a 1-dimensional affine subspace with a small additive error that is normally distributed. In this scenario the $n$ data points will span an affine space of dimension $n$, even though the true model is 1-dimensional. These theoretical considerations are confirmed by experiments which show that the algorithm does not perform well for continuous and categorical data. Table~\ref{tab:lowDimResults} provides a summary of the algorithm's performance on several test data sets according to column dimension and data type. A precision or recall score of 0 indicates that the algorithm did not accurately identify any optimal feature sets.
 \begin{table}[ht]
 \centering
 \caption{Predictive Results for Low Dimensional Data}
@@ -308,8 +312,7 @@ Column Dimension& Data Type& Accuracy & Precision&  Recall\\
 \label{tab:lowDimResults}
 \end{table}
 
-
-To better understand the relationship between our algorithm's performance and dimensionality, we designed an experiment using an Amazon data set as described above. The columns within each of the four feature types are organized in terms of frequency, so that the most common features occur in the earlier columns of each feature type block. The algorithm is used on these data sets repeatedly, while incrementing the number of dimensions included each time. For instance, the first run of the algorithm may include a total of 80 dimensions, the first 20 columns from each feature type. The algorithm's accuracy, precision and recall are recorded for the particular dimension, as well as the CPU time. The total number of features included is then increased to 160, by including the first 40 columns of each feature type. This process is repeated until all available dimensions are being used in the feature selection process. This is different than the previous Amazon data sets, because we are using the same set of five authors throughout the entire experiment, to control for variance between raw data sets. Figure 3 shows the results of this experiment. This experiment was repeated several times each using a different set of five authors with similar results.
+Moreover, the data presented in Table~\ref{tab:lowDimResults} suggest that low dimensional data sets may limit the performance of the proposed algorithm. To better understand the relationship between our algorithm's performance and dimensionality, we designed an experiment using an Amazon data set as described above. The columns within each of the four feature types are organized in terms of frequency, so that the most common features occur in the earlier columns of each feature type block. The algorithm is used on these data sets repeatedly, while incrementing the number of dimensions included each time. For instance, the first run of the algorithm may include a total of 80 dimensions, the first 20 columns from each feature type. The algorithm's accuracy, precision and recall are recorded for the particular dimension, as well as the CPU time. The total number of features included is then increased to 160, by including the first 40 columns of each feature type. This process is repeated until all available dimensions are being used in the feature selection process. This is different than the previous Amazon data sets, because we are using the same set of five authors throughout the entire experiment, to control for variance between raw data sets. Figure 3 shows the results of this experiment. This experiment was repeated several times each using a different set of five authors with similar results.
 \begin{figure}[h]
 \begin{center}
 \includegraphics[scale = .3]{figures/amazon2}
