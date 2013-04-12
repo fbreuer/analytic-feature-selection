@@ -57,13 +57,11 @@ Support vector machines (SVMs) rely on the inherent geometry of a data set to cl
 \begin{section}{Introduction}
 Support Vector Machines (SVMs) are kernel-based machine learning classifiers\cite{Vapnik}. Using optimization methods such as quadratic programming, SVMs produce a hyperplane that separates data points into their respective categories. When a new, unlabeled, data point is introduced, its position relative to the hyperplane is used to predict the category the new point belongs to. One of the most important aspects of any machine learning classification problem is determining the particular combination of variables, or features, within a data set that will lead to the most accurate predictions, which is commonly known as the feature selection problem. Currently the methods used  by most machine learning engineers are heuristic in nature, and do not depend heavily on intrinsic properties of the data set\cite{HanKamber}. Due to the geometric nature of an SVM, it is natural to suggest that the performance of a particular feature set may be tied to its underlying geometric structure. This structure-performance relationship has in turn motivated us to develop an analytically driven approach to the feature selection problem for linear SVMs.
 	
-	
 The primary goal of this research is to identify underlying geometric properties of optimal feature sets, and use these properties to create a feature selection algorithm that relies solely on the inherent geometry of a particular feature set. To accomplish this, we first create $n$-dimensional point clouds to represent known optimal and suboptimal feature sets. These point clouds are then used to identify structural differences between the optimal and suboptimal feature sets. Once these differences are identified, we design an algorithm to identify optimal feature sets based on these observations.
 
 This feature selection algorithm is based on mathematical properties of the feature sets, making it analytic in nature. This sets the algorithm apart from the current, most widely used, wrapper-based or filter-based feature selection methods, which are mostly heuristic in nature\cite{HanKamber}. These methods sometimes require assumptions about the data set, for example, independence among the features, that might not be met by the data. Since our method is based on the geometric structure of the data set, it does not make such assumptions. Also, as machine learning techniques such as SVM become more widely adopted in various application domains, it is important to understand more about the interaction between a learner and a particular data set, as these insights may guide further development in the field. By discovering some mathematical properties that separate optimal feature sets from suboptimal feature sets, we can guide the feature selection process in a much more precise manner. Additionally, knowing these properties can help us to maximize the efficacy of SVMs for a particular classification problem. These properties could even be used to guide data collection efforts, in effect ensuring that the data collected is capable of providing a good feature space.
 
 The algorithm is based on six properties that have been observed across several text data sets. The properties are based on dimensionality and intersection qualities of the affine hulls of the $n$-dimensional point clouds generated from a particular feature set. We evaluated the algorithm on several types of data sets, including low dimensional continuous data, low dimensional categorical data, high dimensional text data in a binary sparse vector format, and high dimensional text data in a word frequency-based sparse vector format. We identified the optimal feature sets of each data set using a wrapper based feature selection method which considers all possible subsets of the whole feature space. These optimal feature sets are then used to develop and evaluate the proposed feature selection algorithm, based on accuracy, precision and recall. We have observed that the algorithm delivers the  best performance on the high dimensional text data, in both binary and word frequency-based formats. The algorithm is best suited to data whose features can be grouped together into feature types, for example, unigrams and bigrams. 
-
 	
 Our algorithm achieves accuracies ranging from 76\% to 86\% within the data sets on which the model was trained, with an average precision of 86\%, and an average recall of 72\%. On test sets with dimensions ranging from 480 to 1440, accuracy ranges from 76\% to 86\%, with an average precision of 83\% and an average recall of 81\%. Precision remains high (.9-1) for data sets up to 3000 dimensions. However, the proposed algorithm does not perform well on test sets with dimension lower than approximately 500. More efforts are required to understand and address this phenomenon. While the CPU time used by the algorithm increases quadratically in both the number of features and the number of examples, the proposed algorithm requires no human interaction during its runtime. 
 
@@ -85,7 +83,6 @@ Bern, {\it et al.} emphasize the importance of the maximizing the margin between
 The overall approach of this work is to examine feature sets arising from  several natural language processing classification problems. We seek to identify key geometric properties that can be used to describe those feature sets for which an SVM performs well. This process of identifying relevant geometric properties is described in this section. In the next section, we construct an empirical algorithm for feature selection based on the geometric properties identified here.
 
 Our training data consists of 717 feature sets, each manually labeled as optimal or suboptimal. These labels, based on classifier accuracy, were determined using an all subsets wrapper-based feature selection method on five data sets from four different classification problems. (These data sets are summarized in Table \ref{tab:trainData}, Section 5.) For each classification problem, we train every possible binary SVM using every possible subset of features. 
-
 
 SVMs are inherently binary classifiers. There are several ways to address this when using SVMs for  multi class problems. A commonly used approach, as described in \cite{HanKamber}, is the {\em one vs all} approach. We use the following variation on this method. Consider a multi class classification problem with $\ell$ classes; this problem consists of $2^{\ell}$ classifiers that represent all possible ways to subdivide $\ell$ classes into two groups. We remove half of these possibilities due to symmetry. Finally, we do not consider the subset with an empty positive class to be a viable classifier, leaving $2^{\ell -1}-1$ possible binary classifiers. Each example in our training data represents one possible feature set for one possible binary classifier for a particular classification problem.
 
@@ -130,9 +127,11 @@ The purpose of the properties $f_i$ is to allow us to assess the geometric struc
 
 For each feature set in our training data, we trained a linear kernel SVM on the training data and assessed the performance of the linear classifier obtained on the test data. We also computed the values of the $f_i$ for each feature set using the LinAlg library of NumPy\cite{numpy}.  
 \begin{figure}[ht]
+\begin{center}
 \includegraphics[scale = .5]{figures/conf_fig}
 \caption{Distributions of Geometric Properties}
 \label{fig:AllProps}
+\end{center}
 \end{figure}
 
 The results of this experiment are shown in Figure~\ref{fig:AllProps}. Each plot shows the standardized z-scores of the values of a particular geometric property for each of the 717 feature sets in our training data. The value of this ratio is plotted against a standardized measure of that particular feature set's performance. In most cases this measure is classifier accuracy, but in the case of $f_4$, we noticed a much stronger correlation between the $f_4$ value and the $F_1$-Score for a given feature set, which is defined as
@@ -150,7 +149,6 @@ Clearly, the geometric properties $f_i$ contain information about the quality of
 
 \begin{section}{Geometric Properties-Based Feature Selection Algorithm}
 The goal of this algorithm is to use the observations discussed in the previous section to identify optimal feature sets for a text classification problem using an SVM with a linear kernel. This section describes the specifics of the algorithm.
-
 
 The input includes a training data set, a list of categories used to label the data, a set of boundary values for the feature types and a directory to store the output files. The columns representing a given feature type must be stored in consecutive columns, as  previously described in Section 3. It is necessary for each training vector to contain at least one nonzero column for each feature type. If the data does not lend itself to this naturally, the user must handle missing values in the manner best suited to the particular learning problem. The vectors of the training data set should be represented in sparse vector notation.
 
@@ -205,10 +203,8 @@ $f_6$&-0.68787718&0\\
 \label{tab:models}
 \end{table}
 
-
 Finally, the algorithm makes a predication for a particular feature set based on the linear and logistic regression models detailed in Table \ref{tab:models}. These models were selected using forward stepwise inclusion with the AIC as the evaluation criterion. In order for a feature set to receive a prediction of {\em optimal}, the logistic regression model must predict a value greater than .5, and the linear model must predict a positive standardized accuracy. (Recall that a z-score of zero indicates the norm.) If both of these conditions are met, then the subset is written to the appropriate output file.
  
-
 The output of the algorithm is a list of suggested feature sets that have the structural characteristics associated with optimal feature sets. Remember, an optimal subset need not be unique. The algorithm gives the user a list of subsets to chose from, based on the user's own criteria.
 
 \end{section}
@@ -218,7 +214,6 @@ The output of the algorithm is a list of suggested feature sets that have the st
 \begin{section}{Algorithm Evaluation}
 
 In this section, we evaluate the power of the feature selection algorithm. We discuss some limitations of the algorithm, particularly, the relationship between the algorithm's performance and the dimensionality of the input data. We also present a theoretical and empirical time complexity analysis for the algorithm.
-
 
 \begin{subsection}{Algorithm Performance}
 The algorithm was run on each of the text data sets used to build the training set, and the results are presented in table \ref{tab:performance}. The polarity1, polarity2 and strength sentences are data sets originally used to classify the polarity and strength of relationships between a food/chemical/gene and a disease\cite{Yang}. The movies documents\cite{Movies} and webtext sentences\cite{nltk} are built from corpora included in Python's Natural Language Tool Kit\cite{nltk}. The movie review corpus is intended for classifying the polarity of reviews as positive or negative, and the webtext corpus consists of sentences from six different websites, each labeled according to their site of origin. 
@@ -239,9 +234,7 @@ Webtext Sentences  & 1200 & 500 & 15 & 4 & 192\\
 \label{tab:trainData}
 \end{table}
 
-
 Table \ref{tab:trainData} is a brief summary table of each set we used to train the model used in our feature selection algorithm. It includes the number of rows(R) and columns(C) of each raw data set. Each data set contains different types of features, and the number of these, (FT), is also listed for each data set. The number of unique binary classifiers (BC) resulting from the classification labels is also listed. Finally, the number of feature sets added to our training set as a result of the creation process is listed. 
-
 
 To evaluate our feature selection algorithm, we calculate its accuracy, precision and recall by comparing the predictions made by the algorithm to the labels that were generated during creation of the training set. (See Section 3 for the label generation process.) Using these labels, we define accuracy, precision and recall as follows:
 \begin{eqnarray*}
@@ -266,9 +259,7 @@ Webtext Sentences& $0.8091 $ & $0.9067 $& $0.6602 $\\
 \end{table}
 Recalling that an optimal feature set need not be unique, we see that precision is extremely important to this task. It is of more value to the user that the percentage of recommended feature sets that actually produce optimal results is high, since these results are the pool from which the user will ultimately choose a feature set. Optimal feature sets that are excluded from the results, or false negatives, do not have nearly as much consequence. 
 
-
 Note, in table 4, the high precision within each data set. These numbers indicate that the algorithm we designed is quite effective for selecting optimal feature sets within the training data. Especially within the Movie Documents, where the algorithm achieves a precision of 1. This means that every feature set the algorithm returned was in fact an optimal feature set for classifying the Movies Documents with a linear SVM. While the algorithm's precision is somewhat lower on the Polarity2 Sentences, it is still impressive, given that only 38\% of the feature sets within the Polarity2 Sentences are actually labeled as optimal.
-
 
 We created several data sets from the Amazon Customer Review Data, available from the UCI Machine Learning Repository\cite{UCI}. The raw data consists of 10,000 features and 1500 examples, with labels corresponding to 50 different authors. We developed each test set using a different set of five authors. Using different authors ensures that the reviews will be entirely different from one data set to the next. Because the reviews are different, the particular set of features generated will also be different, even though they are created in the same manner. The dimension of the  resulting data sets can increased or decreased by controlling the frequency requirements for inclusion of a feature. For example, to reduce the numbers of features, we would require that a particular unigram feature be present within the reviews at least 10 times. Then, to increase the dimension, we simply include less and less frequent features. Each test set also went through the same labeling process as the training data, in order to determine the algorithm's accuracy, precision and recall on previously unseen data. Recall this process was based on a wrapper based, all subsets algorithm that is commonly used to address the problem of feature selection. The results indicate that the algorithm also performs very well on previously unseen data. The Amazon data set was used to test the algorithm over a range of dimensions, and table \ref{tab:amazonRanges} summarizes the performance for these tests for column dimensions ranging from 480 to 1440. These results indicate that the algorithm performs very well within this range of column dimensions. We have observed that precision remains high (.9-1) for dimensions up to 3000.
 \begin{table}[ht]
@@ -323,7 +314,6 @@ Moreover, the data presented in Table~\ref{tab:lowDimResults} suggest that low d
 
 These experiments indicate that the performance of the algorithm is very dependent on the dimensionality of the input data. Note the low values in accuracy, precision and recall for those data sets with less than ~400-500 columns. Figure 3 shows the rapid growth in accuracy, precision and recall for the lower dimensions that  becomes much slower for dimensions larger than ~500. Further study may be warranted to discover the cause of the dimensionality dependence observed in these experiments.
 
-
 In figure 3, we see that the CPU time increases quadratically with column dimension. Note though, that the number of rows, feature types and labels are all held constant through out the experiment. The theoretical time complexity of the algorithm is in fact a function of all of these variables;
 $$\mathcal{O}\left((2^{(\ell - 1)}-1)(2^k-1)(m^2n^2)\right),$$
 where $\ell$ is the number of classification labels in the problem, $k$ is the number of feature groups present, and $m,n$ are the number of rows and columns, respectively, in the training data. The $\mathcal{O}(m^2n^2)$ terms come from the complexity of the singular value decomposition algorithm which is $\mathcal{O}(mn^2)$\cite{Tesic}. In our algorithm, we perform this calculation $(m + 2)$ times during the calculation of the affine intersection ratio. Recall, that the affine intersection ratio is calculated for $(2^k -1)$ feature sets, for each of $(2^{\ell -1} - 1)$ unique binary classifiers. While the Amazon data sets had the capacity to test up to 10,000 columns, the run time became unreasonably long after around 2400 dimensions on a lap top computer.
@@ -335,12 +325,9 @@ where $\ell$ is the number of classification labels in the problem, $k$ is the n
 \begin{section}{Conclusion}
 Support Vector Machines are machine learning classifiers that use geometry to separate training examples into their respective classes. Because of this, SVMs are an excellent candidate for a structural based feature selection algorithm. Many of the commonly used feature selection algorithms are heuristic in nature and do not use inherent characteristics of the data. A more data driven, analytic approach to feature selection will help machine learning engineers to better understand the relationship between a particular classification problem and a given optimal feature set. This understanding can influence data collection efforts and improve classification accuracy.
 
-
 Through investigating the geometric structure of optimal and suboptimal feature sets, we found six qualities that differ significantly between them. We have discovered a linear relationship between the values of our dimensionality and intersection based features with classifier performance. We built linear and logistic regression models that use these six properties as predictor variables to identify optimal feature sets. We used these models to design a filter based feature selection algorithm that is analytic in nature, as opposed to the more commonly used wrapper based heuristic methods. 
 
-
 Our feature selection algorithm performs best on text data sets that have more than approximately 500 features that can be organized into a handful feature types. While the precision remains high for data sets with more that ~2500 features, the computation time needed for these sets is too long to be practical on a single computer. Because of this, further study into parallelization of the algorithm may be warranted.
-
 
 The algorithm did not perform well on low dimensional data sets. More study is needed to determine the cause of the relationship between the dimensionality of the original input data set. Currently, the algorithm does not support feature selection for SVMs using non linear kernels. However, we hypothesize that the algorithm could be successful when applied to other kernel types, if the data is first transformed using the chosen kernel, and the $f_i$'s are then calculated in the transform space. Further study is needed to accept or reject this hypothesis. Despite these limitations, our algorithm presents a useful and innovative approach to the problem of feature selection.
 \end{section}
